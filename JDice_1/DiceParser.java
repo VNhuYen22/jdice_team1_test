@@ -5,12 +5,12 @@ import java.util.logging.Level;
 public class DiceParser {
 	/* this is a helper class to manage the input "stream" */
 	private static final Logger logger = Logger.getLogger(DiceParser.class.getName());
-
 	private static class StringStream {
 		StringBuffer buff;
 
 		public StringStream(String s) {
 			buff = new StringBuffer(s);
+			logger.fine(() -> "Initialized StringStream with input: " + s);
 		}
 
 		private void munchWhiteSpace() {
@@ -28,7 +28,9 @@ public class DiceParser {
 		public boolean isEmpty() {
 			munchWhiteSpace();
 			// return buff.toString().equals("");
-			return buff.isEmpty();
+			boolean empty = buff.isEmpty();
+            logger.fine(() -> "Checking if stream is empty: " + empty);
+            return empty;
 		}
 
 		// xoa ham khogn can thiet
@@ -46,9 +48,11 @@ public class DiceParser {
 				int ans; // chuyen sang kieu int để đỡ tố bo nhớ và hiệu năng vi bien ans ko can luu gia
 							// trị null
 				ans = Integer.parseInt(buff.substring(0, index));
+				logger.fine(() -> "Read integer: " + ans);
 				buff.delete(0, index);
 				return ans;
 			} catch (Exception e) {
+				logger.warning(() -> "Failed to parse integer from: " + buff.toString());
 				return null;
 			}
 		}
@@ -102,8 +106,10 @@ public class DiceParser {
 			munchWhiteSpace();
 			if (buff.indexOf(s) == 0) {
 				buff.delete(0, s.length());
+				logger.fine(() -> "Consumed token: " + s);
 				return true;
 			}
+			logger.fine(() -> "Token not found: " + s);
 			return false;
 		}
 
@@ -136,11 +142,14 @@ public class DiceParser {
 	 **/
 
 	public static Vector<DieRoll> parseRoll(String s) {
+		logger.info(() -> "Parsing roll: " + s);
 		StringStream ss = new StringStream(s.toLowerCase());
 		Vector<DieRoll> v = parseRollInner(ss, new Vector<DieRoll>());
 		if (ss.isEmpty()) {
+			logger.info("Successfully parsed roll, stream is empty");
 			return v;
 		}
+		logger.warning("Parsing failed, remaining stream: " + ss.toString());
 		return null;
 	}
 
@@ -250,6 +259,7 @@ public class DiceParser {
 			}
 		}
 	}
+	
 
 	public static void main(String[] args) {
 		test("d6");
