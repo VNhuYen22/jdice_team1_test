@@ -22,7 +22,7 @@ public class DiceParser {
 					break;
 				index++;
 			}
-			buff.delete(0, index); //Loại bỏ gán lại không cần thiết
+			buff.delete(0, index); // Loại bỏ gán lại không cần thiết
 		}
 
 		public boolean isEmpty() {
@@ -31,10 +31,7 @@ public class DiceParser {
 			return buff.isEmpty();
 		}
 
-		public Integer getInt() {
-			return readInt();
-		}
-
+		// xoa ham khogn can thiet
 		public Integer readInt() {
 			int index = 0;
 			char curr;
@@ -46,7 +43,8 @@ public class DiceParser {
 				index++;
 			}
 			try {
-				int ans; // chuyen sang kieu int để đỡ tố bo nhớ và hiệu năng vi bien ans ko can luu gia trị null
+				int ans; // chuyen sang kieu int để đỡ tố bo nhớ và hiệu năng vi bien ans ko can luu gia
+							// trị null
 				ans = Integer.parseInt(buff.substring(0, index));
 				buff.delete(0, index);
 				return ans;
@@ -58,29 +56,45 @@ public class DiceParser {
 		public Integer readSgnInt() {
 			munchWhiteSpace();
 			StringStream state = save();
+			// if (checkAndEat("+")) {
+			// 	Integer ans = readInt();
+			// 	if (ans != null) {
+			// 		return ans;
+			// 	}
+
+			// 	restore(state);
+			// 	return null;
+			// }
+			// if (checkAndEat("-")) {
+			// 	Integer ans = readInt();
+			// 	if (ans != null) {
+			// 		return -ans;
+			// 	}
+
+			// 	restore(state);
+			// 	return null;
+			// }
+			// return readInt();
+			int sign = 1;
 			if (checkAndEat("+")) {
-				Integer ans = readInt();
-				if (ans != null){
-					return ans;
-				}
-					
+				// Giữ sign = 1
+			} else if (checkAndEat("-")) {
+				sign = -1;
+			}
+			
+			Integer value = readInt();
+			if (value == null) {
 				restore(state);
 				return null;
 			}
-			if (checkAndEat("-")) {
-				Integer ans = readInt();
-				if (ans != null){
-					return -ans;
-				}
-					
-				restore(state);
-				return null;
-			}
-			return readInt();
+			
+			return sign * value;
 		}
+
 		/**
 		 * Refactored:
-		 * - Loại bỏ gán lại không cần thiết: thay `buff = buff.delete(...)` bằng `buff.delete(...)`.
+		 * - Loại bỏ gán lại không cần thiết: thay `buff = buff.delete(...)` bằng
+		 * `buff.delete(...)`.
 		 * - Vì delete() đã thay đổi nội bộ buffer nên không cần gán lại.
 		 * - Giúp giảm thao tác và làm code ngắn gọn, rõ ràng hơn.
 		 */
@@ -124,7 +138,7 @@ public class DiceParser {
 	public static Vector<DieRoll> parseRoll(String s) {
 		StringStream ss = new StringStream(s.toLowerCase());
 		Vector<DieRoll> v = parseRollInner(ss, new Vector<DieRoll>());
-		if (ss.isEmpty()){
+		if (ss.isEmpty()) {
 			return v;
 		}
 		return null;
@@ -144,8 +158,9 @@ public class DiceParser {
 
 	private static Vector<DieRoll> parseXDice(StringStream ss) {
 		StringStream saved = ss.save();
-		// Integer x = ssgetInt();
-		Integer x = ss.readInt(); //goi trực tiếp hàm readInt() thay vì getInt() vì hàm getInt cũng chỉ gọi ra ham readInt()
+		// Integer x = ssreadInt();
+		Integer x = ss.readInt(); // goi trực tiếp hàm readInt() thay vì readInt() vì hàm readInt cũng chỉ gọi ra
+									// ham readInt()
 		int num;
 		if (x == null) {
 			num = 1;
@@ -153,7 +168,7 @@ public class DiceParser {
 			if (ss.checkAndEat("x")) {
 				num = x;
 			} else {
-				ss.restore(saved); //loai bo mum = 1: vì restore rồi lại gán num = 1 là không hợp lý
+				ss.restore(saved); // loai bo mum = 1: vì restore rồi lại gán num = 1 là không hợp lý
 			}
 		}
 		DieRoll dr = parseDice(ss);
@@ -184,7 +199,7 @@ public class DiceParser {
 		 * return parseDTail(d,ss);
 		 * }
 		 */
-		Integer num = ss.getInt();
+		Integer num = ss.readInt(); // doi cach goi ham
 		int dsides;
 		int ndice;
 		if (num == null) {
@@ -193,7 +208,7 @@ public class DiceParser {
 			ndice = num;
 		}
 		if (ss.checkAndEat("d")) {
-			num = ss.getInt();
+			num = ss.readInt(); // doi cach goi ham
 			if (num == null)
 				return null;
 			dsides = num;
@@ -206,9 +221,7 @@ public class DiceParser {
 			bonus = 0;
 		else
 			bonus = num;
-		return new DieRoll(ndice,
-				dsides,
-				bonus);
+		return new DieRoll(ndice, dsides, bonus);
 
 	}
 
@@ -218,7 +231,7 @@ public class DiceParser {
 			return null;
 		if (ss.checkAndEat("&")) {
 			DieRoll d2 = parseDice(ss);
-			return parseDTail(new DiceSum(r1,d2),ss); // mở lại comment vì thiếu return
+			return parseDTail(new DiceSum(r1, d2), ss); // mở lại comment vì thiếu return
 		} else {
 			return r1;
 		}
@@ -228,9 +241,9 @@ public class DiceParser {
 		Vector<DieRoll> v = parseRoll(s);
 		int i;
 		if (v == null)
-			logger.warning(()-> "Failure: " +s );
+			logger.warning(() -> "Failure: " + s);
 		else {
-			logger.info(()-> "Results for : " +s+":");
+			logger.info(() -> "Results for : " + s + ":");
 			for (i = 0; i < v.size(); i++) {
 				DieRoll dr = v.get(i);
 				logger.info(() -> dr.toString() + ": " + dr.makeRoll());
